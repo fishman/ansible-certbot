@@ -1,0 +1,39 @@
+- name: Install python-pip
+  package:
+    name: "{{ item }}"
+    state: present
+  become: yes
+  with_items:
+    - py27-pip
+    - gcc49
+
+- name: Install certbot from pip
+  pip:
+    name: certbot
+    state: present
+  become: yes
+
+- name: Create invalid tmp cert/key to start to bootstrap
+  shell: "{{ item }}"
+  args:
+    chdir: /tmp
+    creates: "{{ certbot_dest_bundle }}"
+  with_items:
+    - "openssl genrsa -out server.key 2048"
+    - "openssl req -new -key server.key -out server.csr -subj '/C=GB/ST=London/L=London/O=Global Security/OU=IT Department/CN=example.com'"
+    - "openssl x509 -req -days 365 -in server.csr -signkey server.key -out server.crt"
+    - "cat server.crt server.key > {{ certbot_dest_bundle }}"
+  become: yes
+
+- name: Create certbot certs if needed
+  command: "certbot {{ certbot_certonly_flags }}"
+  become: yes
+
+- name: Setup certbot crontab if needed
+  cron: name="Autorenew certbot"
+        minute="0"
+        hour="*/12"
+        job="certbot {{ certbot_renew_flags }}"
+        cron_file=certbot
+        user="root"
+  become: yes

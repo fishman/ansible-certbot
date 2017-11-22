@@ -1,0 +1,23 @@
+# Certbot vars
+certbot_test: False
+certbot_keysize: 4096
+certbot_pref_challenge: tls-sni-01
+certbot_tls_bind_addr: 127.0.0.1
+certbot_tls_bind_port: 18443
+
+certbot_http_bind_addr: 127.0.0.1
+certbot_http_bind_port: 18080
+
+certbot_email: user@example.com
+certbot_domains:
+  - www.example.com
+  - example.com
+
+certbot_dest_bundle: /opt/local/etc/haproxy.pem
+certbot_prehook: ""
+certbot_posthook: "cat /etc/letsencrypt/live/{{ certbot_domains[0] }}/{fullchain,privkey}.pem > {{ certbot_dest_bundle }}; svcadm restart haproxy"
+
+
+certbot_all_flags: '{% if certbot_test %}--test-cert {% endif %} --debug --standalone --keep --agree-tos --preferred-challenges {{ certbot_pref_challenge }} --tls-sni-01-port {{ certbot_tls_bind_port }} --http-01-port {{ certbot_http_bind_port }} --rsa-key-size {{ certbot_keysize }} --agree-tos --email {{ certbot_email }} -q -n --expand --pre-hook "{{ certbot_prehook }}" --post-hook "{{ certbot_posthook }}"'
+certbot_certonly_flags: "certonly {{ certbot_all_flags }} {% for i in certbot_domains %} -d {{ i }} {% endfor %}"
+certbot_renew_flags: "renew {{ certbot_all_flags }}"
