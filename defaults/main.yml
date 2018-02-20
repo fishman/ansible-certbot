@@ -1,12 +1,12 @@
 # Certbot vars
 certbot_test: False
 certbot_keysize: 4096
-certbot_pref_challenge: tls-sni-01
+certbot_pref_challenge: http-01
 certbot_tls_bind_addr: 127.0.0.1
 certbot_tls_bind_port: 18443
 
 certbot_http_bind_addr: 127.0.0.1
-certbot_http_bind_port: 18080
+certbot_http_bind_port: 54321
 
 certbot_email: user@example.com
 certbot_domains:
